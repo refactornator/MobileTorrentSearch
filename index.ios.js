@@ -90,7 +90,7 @@ var MobileTorrentSearch = React.createClass({
             <Text> | </Text>
             <Text>{data.leechs} L</Text>
             <Text> | </Text>
-            <Text>{data.files} files - {readableSize}</Text>
+            <Text>{data.files} {data.files === 1 ? 'file' : 'files'} - {readableSize}</Text>
           </View>
         </View>
       </TouchableHighlight>
