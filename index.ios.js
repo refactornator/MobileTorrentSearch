@@ -5,6 +5,10 @@
 'use strict';
 
 var URI = require('URIjs');
+var PrettyBytes = require('pretty-bytes');
+var Moment = require('moment');
+var He = require('he');
+var { Icon, } = require('react-native-icons');
 var React = require('react-native');
 var {
   ActivityIndicatorIOS,
@@ -33,11 +37,24 @@ AsyncStorage.getItem(STORAGE_KEY).then(function(value) {
 
 var BUTTONS = [
   'Download to Dropbox',
+  'Hide',
   'Cancel',
 ];
 
-var CANCEL_INDEX = 1;
+var CATEGORY_TO_ICON_MAP = {
+  'TV': 'material|tv',
+  'Movies': 'material|movie',
+  'Books': 'material|book',
+  'Anime': 'material|flower-alt',
+  'XXX': 'material|explicit',
+  'Games': 'material|gamepad',
+  'Music': 'material|album',
+  'Other': 'material|archive'
+}
 
+var CANCEL_INDEX = 2;
+
+var screen = require('Dimensions').get('window');
 var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 var MobileTorrentSearch = React.createClass({
   getInitialState: function() {
@@ -50,12 +67,31 @@ var MobileTorrentSearch = React.createClass({
   },
 
   _renderRow: function(data, sectionID, rowID, highlightRow) {
+    var title = He.decode(data.title);
+    var readableSize = PrettyBytes(data.size);
+    var iconName = data.category in CATEGORY_TO_ICON_MAP ? CATEGORY_TO_ICON_MAP[data.category] : CATEGORY_TO_ICON_MAP['Other'];
+    var readablePublishDate = Moment(new Date(data.pubDate)).fromNow(true);
+
     return (
       <TouchableHighlight key={data.guid} onPress={() => this._pressRow(data.guid)}>
         <View style={[styles.row]}>
-          <Text style={styles.text}>
-            {data.title}
-          </Text>
+          <View style={styles.title}>
+            <Icon
+              name={iconName}
+              size={15}
+              color='black'
+              style={styles.categoryIcon} />
+            <Text style={{width: screen.width - 30}}>{title}</Text>
+          </View>
+          <View style={styles.stats}>
+            <Text>{readablePublishDate} old</Text>
+            <Text> | </Text>
+            <Text>{data.seeds} S</Text>
+            <Text> | </Text>
+            <Text>{data.leechs} L</Text>
+            <Text> | </Text>
+            <Text>{data.files} files - {readableSize}</Text>
+          </View>
         </View>
       </TouchableHighlight>
     );
@@ -74,7 +110,9 @@ var MobileTorrentSearch = React.createClass({
       cancelButtonIndex: CANCEL_INDEX,
     },
     (buttonIndex) => {
-      if(BUTTONS[buttonIndex] === 'Download to Dropbox') {
+      if(BUTTONS[buttonIndex] === 'Hide') {
+        this._removeResult(id);
+      } else if(BUTTONS[buttonIndex] === 'Download to Dropbox') {
         if(ACCESS_KEY !== null) {
           fetch(`https://api.dropbox.com/1/save_url/auto/${title}.torrent`, {
             method: 'POST',
@@ -208,13 +246,12 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginLeft: 5,
-    marginRight: 5,
-    marginTop: 5,
-    marginBottom: 6,
-    padding: 8,
+    flexDirection: 'column',
+    marginLeft: 3,
+    marginRight: 3,
+    marginTop: 3,
+    marginBottom: 4,
+    padding: 4,
     backgroundColor: '#F6F6F6',
     borderRadius: 2,
     shadowColor: '#000000',
@@ -225,8 +262,19 @@ var styles = StyleSheet.create({
       width: 0
     }
   },
-  text: {
+  title: {
     flex: 1,
+    flexDirection: 'row',
+    marginBottom: 10
+  },
+  stats: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  categoryIcon: {
+    width: 16,
+    height: 16
   },
 });
 
