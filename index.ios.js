@@ -79,16 +79,16 @@ var MobileTorrentSearch = React.createClass({
             <Icon
               name={iconName}
               size={15}
-              color='black'
+              color='#656565'
               style={styles.categoryIcon} />
             <Text style={{width: screen.width - 30}}>{title}</Text>
           </View>
           <View style={styles.stats}>
             <Text>{readablePublishDate} old</Text>
             <Text> | </Text>
-            <Text>{data.seeds} S</Text>
+            <Text style={{color: '#008f0d'}}>{data.seeds} S</Text>
             <Text> | </Text>
-            <Text>{data.leechs} L</Text>
+            <Text style={{color: '#b94309'}}>{data.leechs} L</Text>
             <Text> | </Text>
             <Text>{data.files} {data.files === 1 ? 'file' : 'files'} - {readableSize}</Text>
           </View>
